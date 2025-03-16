@@ -4,7 +4,7 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import "../styles/MainPortfolio.css";
 import Photo from '../assets/Photo.jpeg';
 import { motion } from "framer-motion";
-import GitaGPT from "../assets/GitaGPt.png"
+import GitaGPT from "../assets/GitaGPT.png"
 import Vetra from '../assets/Vetra .png'
 import womenapp from '../assets/womenapp.jpeg'
 import {
