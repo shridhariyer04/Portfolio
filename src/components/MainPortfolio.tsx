@@ -903,7 +903,22 @@ const MainPortfolio = () => {
     e.preventDefault();
     setIsSubmitting(true);
     
-    // Simulate form submission
+    // Create Gmail compose URL with form data in conversational format
+    const subject = encodeURIComponent(`Portfolio Contact - ${formData.name}`);
+    const body = encodeURIComponent(
+      `Hey, I'm ${formData.name}!\n\n` +
+      `${formData.message}\n\n` +
+      `Looking forward to connecting with you!\n\n` +
+      `You can reach me at: ${formData.email}`
+    );
+    
+    // Open Gmail compose window
+    window.open(
+      `https://mail.google.com/mail/?view=cm&fs=1&to=shreeiyer04@gmail.com&su=${subject}&body=${body}`,
+      '_blank'
+    );
+    
+    // Show success message and reset form
     setTimeout(() => {
       setIsSubmitting(false);
       setSubmitted(true);
@@ -913,7 +928,7 @@ const MainPortfolio = () => {
       setTimeout(() => {
         setSubmitted(false);
       }, 5000);
-    }, 1500); 
+    }, 1000);
   };
   
   
