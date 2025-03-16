@@ -1,12 +1,11 @@
 import { useEffect, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import "../styles/MainPortfolio.css";
 import Photo from '../assets/Photo.jpeg';
 import { motion } from "framer-motion";
 import GitaGPT from "../assets/GitaGPt.png"
-import Vetra from '../assets/Vetra .png'// Adjust the path as needed
+import Vetra from '../assets/Vetra .png'
 import womenapp from '../assets/womenapp.jpeg'
 import {
   SiJavascript,
@@ -23,12 +22,6 @@ import {
   SiExpo
 } from "react-icons/si";
 
-interface Greeting {
-  text: string;
-  lang: string;
-}
-
-// Add this interface at the top of the file, before the MainPortfolio component
 interface ExtendedHTMLDivElement extends HTMLDivElement {
   _initialized?: boolean;
 }
@@ -93,32 +86,26 @@ const TechStack = () => {
 };
 
 const MainPortfolio = () => {
-  const navigate = useNavigate();
-  const bioSectionRef = useRef<HTMLDivElement>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    message: "",
+  });
+
+  const bioSectionRef = useRef<ExtendedHTMLDivElement>(null);
   const workContainerRef = useRef<ExtendedHTMLDivElement>(null);
-  const endSectionRef = useRef<HTMLDivElement>(null);
+  const footerRef = useRef<ExtendedHTMLDivElement>(null);
   const sectionRefs = useRef<HTMLDivElement[]>([]);
   const [activeSection, setActiveSection] = useState<number>(0);
   const [inWorkView, setInWorkView] = useState<boolean>(false);
-  const [showEndSection, setShowEndSection] = useState<boolean>(false);
   const headerRefs = useRef<(HTMLDivElement | null)[]>([]);
   const contentRefs = useRef<(HTMLDivElement | null)[]>([]);
-  const outroRef = useRef<HTMLDivElement>(null);
-  const whiteScreenRef = useRef<HTMLDivElement>(null);
-  const [showOutro, setShowOutro] = useState<boolean>(false);
-  const footerRef = useRef<HTMLDivElement>(null);
   const mainContainerRef = useRef<HTMLDivElement>(null);
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    message: ''
-  });
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
- // Calculate local and Shridhar's time
- const [localTime, setLocalTime] = useState('');
- const [shridharTime, setShridharTime] = useState('');
- const formRef = useRef(null);
+  const [localTime, setLocalTime] = useState('');
+  const [shridharTime, setShridharTime] = useState('');
+  const formRef = useRef(null);
 
   const projects = [
     {
@@ -158,15 +145,7 @@ const MainPortfolio = () => {
     },
   ];
 
-  const greetings: Greeting[] = [
-    { text: "Hey!", lang: "English" },
-    { text: "नमस्ते!", lang: "Hindi" },
-    { text: "வணக்கம்!", lang: "Tamil" },
-    { text: "Salut!", lang: "French" },
-    { text: "नमस्कार!", lang: "Sanskrit" },
-    { text: "Hola!", lang: "Spanish" },
-    { text: "こんにちは!", lang: "Japanese" },
-  ];
+  gsap.registerPlugin(ScrollTrigger);
 
   useEffect(() => {
     console.log("First useEffect: Initializing ScrollTrigger");
@@ -174,8 +153,6 @@ const MainPortfolio = () => {
       console.log("Already in work view, skipping first useEffect");
       return;
     }
-    gsap.registerPlugin(ScrollTrigger);
-  
     ScrollTrigger.getAll().forEach(trigger => trigger.kill());
   
     if (!workContainerRef.current || !bioSectionRef.current || !mainContainerRef.current) {
@@ -186,7 +163,6 @@ const MainPortfolio = () => {
     // Initial states
     gsap.set(workContainerRef.current, { y: "100%", backgroundColor: "#000000", opacity: 1 });
     gsap.set(bioSectionRef.current, { opacity: 1 });
-    if (endSectionRef.current) gsap.set(endSectionRef.current, { y: "100%", opacity: 0 });
     if (footerRef.current) gsap.set(footerRef.current, { y: "100vh", opacity: 0 });
   
     // Pre-initialize the first section to prevent reloading
@@ -931,11 +907,6 @@ const MainPortfolio = () => {
     }, 1000);
   };
   
-  
-  
-  // Define endSectionRef if it doesn't exist in your original code
-
-
   return (
     <div className="main-container" ref={mainContainerRef}>
       <div ref={bioSectionRef} className="portfolio-container">
