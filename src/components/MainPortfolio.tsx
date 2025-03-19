@@ -85,6 +85,9 @@ const TechStack = () => {
   );
 };
 
+// Move GSAP registration outside component
+gsap.registerPlugin(ScrollTrigger);
+
 const MainPortfolio = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
@@ -145,54 +148,38 @@ const MainPortfolio = () => {
     },
   ];
 
-  gsap.registerPlugin(ScrollTrigger);
-
   useEffect(() => {
     const initializeScroll = () => {
-      // Ensure DOM is fully loaded
-      if (document.readyState !== 'complete') {
-        console.log("DOM not ready, waiting for load event...");
-        return;
-      }
-  
-      console.log("First useEffect: Initializing ScrollTrigger");
-      if (inWorkView) {
-        console.log("Already in work view, skipping initialization");
-        return;
-      }
-  
       if (!workContainerRef.current || !bioSectionRef.current || !mainContainerRef.current) {
-        console.log("First useEffect: Missing refs, exiting");
+        console.log("Missing refs, exiting");
         return;
       }
-  
-      // Clean up any existing ScrollTriggers
+
+      // Kill any existing ScrollTriggers
       ScrollTrigger.getAll().forEach(trigger => trigger.kill());
-  
-      // Initial states
-      gsap.set(workContainerRef.current, { y: "100%", backgroundColor: "#000000", opacity: 1 });
-      gsap.set(bioSectionRef.current, { opacity: 1 });
-      if (footerRef.current) gsap.set(footerRef.current, { y: "100vh", opacity: 0 });
-  
-      // Pre-initialize the first section
-      if (sectionRefs.current[0]) {
-        gsap.set(sectionRefs.current[0], {
-          display: "block",
-          opacity: 0,
-          y: "100%",
-          height: "100vh",
-          position: "absolute",
-          top: 0,
-          width: "100%"
-        });
-        if (contentRefs.current[0]) {
-          gsap.set(contentRefs.current[0], { opacity: 1, height: "auto", y: 0 });
-        }
-        if (headerRefs.current[0]) {
-          gsap.set(headerRefs.current[0], { opacity: 1, y: 0 });
-        }
-      }
-  
+
+      // Set initial states
+      gsap.set(workContainerRef.current, { 
+        display: "block",
+        y: "100%", 
+        backgroundColor: "#000000", 
+        opacity: 1,
+        position: "fixed",
+        top: 0,
+        left: 0,
+        width: "100%",
+        height: "100vh",
+        zIndex: 10,
+        visibility: "visible"
+      });
+
+      // Ensure bio section is visible
+      gsap.set(bioSectionRef.current, { 
+        opacity: 1,
+        visibility: "visible"
+      });
+
+      // Set up ScrollTrigger
       const mainTl = gsap.timeline({
         scrollTrigger: {
           trigger: mainContainerRef.current,
@@ -206,21 +193,17 @@ const MainPortfolio = () => {
               console.log("ScrollTrigger progress:", self.progress.toFixed(2));
             }
           },
-          onLeave: (self) => {
+          onLeave: () => {
             console.log("ScrollTrigger onLeave: Entering work view");
             mainTl.eventCallback("onComplete", () => {
               console.log("Timeline complete, setting inWorkView = true");
-              if (sectionRefs.current[0]) {
-                gsap.set(sectionRefs.current[0], { opacity: 1, y: "0%" });
-              }
               setInWorkView(true);
               setActiveSection(0);
-              self.disable();
             });
           },
         },
       });
-  
+
       mainTl
         .to(workContainerRef.current, {
           y: "0%",
@@ -249,50 +232,27 @@ const MainPortfolio = () => {
           },
           "-=0.8"
         );
-  
-      // Refresh ScrollTrigger after setup to ensure correct calculations
+
+      // Refresh ScrollTrigger after setup
       setTimeout(() => {
         ScrollTrigger.refresh();
-        console.log("ScrollTrigger refreshed, active triggers:", ScrollTrigger.getAll().length);
+        console.log("ScrollTrigger refreshed");
       }, 100);
-  
-      let scrollTimeout: number;
-      const handleScroll = () => {
-        if (scrollTimeout) clearTimeout(scrollTimeout);
-        scrollTimeout = setTimeout(() => {
-          const scrollTop = window.scrollY || document.documentElement.scrollTop;
-          const triggerPoint = mainContainerRef.current?.offsetHeight || 0;
-          if (scrollTop > triggerPoint * 0.8 && !inWorkView) {
-            console.log("Fallback scroll: Setting inWorkView = true");
-            setInWorkView(true);
-            setActiveSection(0);
-          }
-        }, 50);
-      };
-  
-      window.addEventListener("scroll", handleScroll, { passive: true });
-  
-      return () => {
-        console.log("First useEffect cleanup");
-        ScrollTrigger.getAll().forEach(trigger => trigger.kill());
-        window.removeEventListener("scroll", handleScroll);
-        if (scrollTimeout) clearTimeout(scrollTimeout);
-        mainTl.kill();
-      };
     };
-  
-    // Run immediately if DOM is ready, otherwise wait for load
+
+    // Run initialization
     if (document.readyState === 'complete') {
       initializeScroll();
     } else {
       window.addEventListener('load', initializeScroll);
     }
-  
+
     return () => {
       window.removeEventListener('load', initializeScroll);
+      ScrollTrigger.getAll().forEach(trigger => trigger.kill());
     };
-  }, [inWorkView]);
-  
+  }, []);
+
   useEffect(() => {
     console.log("Second useEffect: Running with inWorkView =", inWorkView, "activeSection =", activeSection);
     if (!inWorkView || !workContainerRef.current) {

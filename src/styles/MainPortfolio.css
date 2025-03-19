@@ -230,7 +230,7 @@ nav a:hover,
 /* Work Section (Base Styles) */
 /* ========================================================================= */
 .work-container {
-  position: absolute;
+  position: fixed;
   top: 0;
   left: 0;
   width: 100%;
@@ -243,6 +243,14 @@ nav a:hover,
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
   transform-style: preserve-3d;
+  z-index: 10;
+  visibility: visible;
+  display: block;
+}
+
+.work-container.active {
+  transform: translateY(0);
+  transition: transform 0.5s ease-in-out;
 }
 
 .work-content {
@@ -274,12 +282,15 @@ nav a:hover,
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
   transform-style: preserve-3d;
+  display: none;
+  visibility: visible;
 }
 
 .work-section.active {
   opacity: 1;
   z-index: 2;
   pointer-events: auto;
+  display: block;
 }
 
 .work-section.inactive {
