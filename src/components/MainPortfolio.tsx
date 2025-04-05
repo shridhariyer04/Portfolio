@@ -7,6 +7,7 @@ import { motion } from "framer-motion";
 import GitaGPT from "../assets/GitaGPT.png"
 import Vetra from '../assets/Vetra .png'
 import womenapp from '../assets/womenapp.jpeg'
+import { Link } from "react-router-dom";
 import {
   SiJavascript,
   SiDocker,
@@ -333,31 +334,20 @@ const MainPortfolio = () => {
       const now = Date.now();
       if (isTransitioning || now - lastScrollTime < TRANSITION_COOLDOWN) return;
       if (Math.abs(e.deltaY) < 15) return;
-  
       lastScrollTime = now;
       isTransitioning = true;
-      console.log("Wheel: Processing - deltaY =", e.deltaY.toFixed(2), "activeSection =", activeSection);
-  
       requestAnimationFrame(() => {
         if (e.deltaY > 0 && activeSection < sectionRefs.current.length - 1) {
-          console.log("Wheel: Scrolling down to section", activeSection + 1);
           transitionToSection(activeSection + 1);
-        } else if (e.deltaY < 0 && activeSection > 0) {
-          console.log("Wheel: Scrolling up to section", activeSection - 1);
+        } else if (e.deltaY < 0 && activeSection > 0 && activeSection < 6) {
           transitionToSection(activeSection - 1);
         } else if (e.deltaY > 0 && activeSection === sectionRefs.current.length - 1) {
-          console.log("Wheel: Transitioning to end section");
           transitionToEndSection();
         } else if (e.deltaY < 0 && activeSection === 0) {
-          console.log("Wheel: Transitioning back to bio section");
           transitionToBioSection();
-        } else if (e.deltaY < 0 && activeSection === 6) { // Assuming footer is index 6
-          console.log("Wheel: Scrolling up from footer to third project");
-          transitionToSection(5); // Go back to Women Safety App
-        }
+        } 
+        isTransitioning = false;
       });
-  
-      setTimeout(() => { isTransitioning = false; }, TRANSITION_COOLDOWN);
     };
   
     let touchStartY = 0;
@@ -423,10 +413,7 @@ const MainPortfolio = () => {
           transitionToEndSection();
         } else if ((e.key === 'ArrowUp' || e.key === 'PageUp') && activeSection === 0) {
           console.log("Key: Transitioning back to bio section");
-          transitionToBioSection();
-        } else if ((e.key === 'ArrowUp' || e.key === 'PageUp') && activeSection === 6) { // Assuming footer is index 6
-          console.log("Key: Scrolling up from footer to third project");
-          transitionToSection(5); // Go back to Women Safety App
+          // Go back to Women Safety App
         } else {
           isTransitioning = false;
           return;
@@ -532,6 +519,81 @@ const MainPortfolio = () => {
     tl.to(targetContent, { opacity: 1, duration: 0.35, ease: "power2.inOut" }, "-=0.2");
     tl.fromTo(targetSection, { scale: 0.98 }, { scale: 1, duration: 0.3, ease: "power2.out" }, "-=0.3");
   };
+
+  const setupProjectFooterScroll = () => {
+    if (!workContainerRef.current || !footerRef.current || !sectionRefs.current[5]) {
+      console.error("Missing refs for project-footer scroll");
+      return;
+    }
+  
+    // Create a container that will hold both the project section and footer
+    const projectFooterContainer = document.createElement('div');
+    projectFooterContainer.className = 'project-footer-container';
+    document.body.appendChild(projectFooterContainer);
+  
+    // Set styles for the container
+    gsap.set(projectFooterContainer, {
+      position: 'fixed',
+      top: 0,
+      left: 0,
+      width: '100%',
+      height: '100vh',
+      overflow: 'auto',
+      zIndex: 10,
+      visibility: 'visible'
+    });
+  
+    // Helper function to handle the scroll between projects and footer
+    const handleProjectFooterScroll = () => {
+      if (!inWorkView || activeSection !== 5) return;
+      
+      const scrollPosition = projectFooterContainer.scrollTop;
+      const projectHeight = sectionRefs.current[5].offsetHeight;
+      const scrollProgress = scrollPosition / (projectHeight - window.innerHeight);
+      
+      console.log(`Scroll progress: ${scrollProgress.toFixed(2)}`);
+      
+      // Smoothly transition to footer when scrolling past projects
+      if (scrollProgress > 0.8) {
+        gsap.to(footerRef.current, {
+          y: '0',
+          opacity: 1,
+          duration: 0.5,
+          display: 'block',
+          ease: 'power2.out'
+        });
+      } else {
+        gsap.to(footerRef.current, {
+          y: '30vh',
+          opacity: 0,
+          duration: 0.5,
+          ease: 'power2.out'
+        });
+      }
+      
+      // If we're fully at the footer, update state to reflect this
+      if (scrollProgress >= 1) {
+        // We're at the footer, but still technically in the project view
+        // Just update UI accordingly without completely changing the state
+        console.log("Fully scrolled to footer");
+      }
+    };
+  
+    // Add the project section and footer to the container
+    projectFooterContainer.appendChild(sectionRefs.current[5].cloneNode(true));
+    projectFooterContainer.appendChild(footerRef.current.cloneNode(true));
+    
+    // Add scroll event listener
+    projectFooterContainer.addEventListener('scroll', handleProjectFooterScroll);
+    
+    return () => {
+      projectFooterContainer.removeEventListener('scroll', handleProjectFooterScroll);
+      document.body.removeChild(projectFooterContainer);
+    };
+  };
+
+    // Modify the transitionBackToWorkSection function to properly handle returning from footer
+    
   
   const transitionToBioSection = () => {
     console.log("transitionToBioSection: Starting transition back to bio");
@@ -580,11 +642,6 @@ const MainPortfolio = () => {
       return;
     }
   
-    // Lock scrolling and prevent further downward navigation
-    document.body.style.overflow = 'hidden';
-    document.body.style.position = 'fixed';
-    document.body.style.width = '100%';
-  
     const tl = gsap.timeline({
       onStart: () => {
         console.log('Footer transition started');
@@ -600,13 +657,8 @@ const MainPortfolio = () => {
       onComplete: () => {
         console.log("Footer transition complete");
         setInWorkView(false);
-        setActiveSection(5); // Set to third project index as default for upward navigation
-        // Keep body locked to prevent scrolling past footer
-        document.body.style.overflow = 'hidden';
-        document.body.style.position = '';
-        document.body.style.width = '';
-  
-        // Scroll to footer after a slight delay
+        setActiveSection(6); // Set to 6 for footer
+        document.body.style.overflow = 'hidden'; // Keep scroll locked
         setTimeout(() => {
           if (footerRef.current) {
             footerRef.current.scrollIntoView({ behavior: 'smooth' });
@@ -883,28 +935,28 @@ const MainPortfolio = () => {
           <nav>
             <a href="#bio">BIO</a>
             <a href="#work">WORK</a>
+            <Link to="/contact">CONTACT</Link> {/* Updated to link to separate contact page */}
           </nav>
-          <a href="#contact" className="contact">CONTACT</a>
         </header>
         <div className="content-wrapper">
-  <h1 className="heading" id="greetingText">Hey!<span className="smiley">:)</span></h1>
-  <div className="center-image">
-    <img src={Photo} alt="Profile Photo" className="profile-image" />
-  </div>
-  <p className="left-text">
-    Engineered by <strong>Shridhar</strong>, a full-stack and mobile developer driven to build scalable solutions that tackle real-world challenges
-  </p>
-  <div className="right-text">
-    <div className="righttext-social-links">
-      <a href="https://linkedin.com/in/yourprofile" target="_blank" rel="noopener noreferrer">LinkedIn</a>
-      <a href="https://github.com/yourusername" target="_blank" rel="noopener noreferrer">GitHub</a>
-      <a href="https://twitter.com/yourhandle" target="_blank" rel="noopener noreferrer">Twitter</a>
-    </div>
-    <a href="/resume.pdf" download className="resume-button">
-      Download Resume
-    </a>
-  </div>
-</div>
+          <h1 className="heading" id="greetingText">Hey!<span className="smiley">:)</span></h1>
+          <div className="center-image">
+            <img src={Photo} alt="Profile Photo" className="profile-image" />
+          </div>
+          <p className="left-text">
+            Engineered by <strong>Shridhar</strong>, a full-stack and mobile developer driven to build scalable solutions that tackle real-world challenges
+          </p>
+          <div className="right-text">
+            <div className="righttext-social-links">
+              <a href="https://linkedin.com/in/yourprofile" target="_blank" rel="noopener noreferrer">LinkedIn</a>
+              <a href="https://github.com/yourusername" target="_blank" rel="noopener noreferrer">GitHub</a>
+              <a href="https://twitter.com/yourhandle" target="_blank" rel="noopener noreferrer">Twitter</a>
+            </div>
+            <a href="/resume.pdf" download className="resume-button">
+              Download Resume
+            </a>
+          </div>
+        </div>
       </div>
       
       {/* Work Container */}
@@ -931,7 +983,7 @@ const MainPortfolio = () => {
               >
                 <div className="section-content">
                   <p className="text-lg leading-relaxed mb-6">
-                  I'm a passionate backend engineer. Currently expanding my expertise in frontend development to build seamless full-stack applications. I have experience working with cutting-edge technologies, including Next.js, FastAPI, and cloud infrastructure.
+                    I'm a passionate backend engineer. Currently expanding my expertise in frontend development to build seamless full-stack applications. I have experience working with cutting-edge technologies, including Next.js, FastAPI, and cloud infrastructure.
                   </p>
                   <div className="subsections grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="subsection flex items-center p-4 bg-gray-900/50 rounded-lg hover:bg-gray-900/70 transition-all" style={{'--index': 1} as React.CSSProperties}>
@@ -971,7 +1023,6 @@ const MainPortfolio = () => {
               </div>
             </div>
             
-            {/* Rest of sections remain the same */}
             <div 
               ref={(el) => { if (el) sectionRefs.current[1] = el; }} 
               className={`work-section ${activeSection === 1 ? "active" : "inactive"}`} 
@@ -1030,6 +1081,7 @@ const MainPortfolio = () => {
                 </div>
               </div>
             </div>
+            
             <div 
               ref={(el) => { if (el) sectionRefs.current[2] = el; }} 
               className={`work-section ${activeSection === 2 ? "active" : "inactive"}`} 
@@ -1052,265 +1104,88 @@ const MainPortfolio = () => {
                   I use a diverse range of modern technologies to create robust, scalable, and performant applications. Here's a look at the tools and frameworks I'm proficient with:
                 </p>
                 <TechStack />
-                <div className="scroll-indicator" onClick={() => transitionToSection(3)}>Scroll for more</div>
+                <div className="scroll-indicator flex items-center gap-2 text-gray-400 hover:text-white transition-colors cursor-pointer" onClick={() => transitionToSection(3)}>
+                  <span>Next: Projects</span>
+                  <span>→</span>
+                </div>
               </div>
             </div>
+            
             {projects.map((project, index) => {
-  const projectIndex = 3 + index;
-  return (
-    <div
-      key={projectIndex}
-      ref={(el) => { if (el) sectionRefs.current[projectIndex] = el; }}
-      className={`work-section ${activeSection === projectIndex ? "active" : "inactive"}`}
-      id={`project-${index}`}
-    >
-      <div className="star">★</div>
-      <div
-        className="section-header"
-        ref={(el) => { if (el) headerRefs.current[projectIndex] = el; }}
-        onClick={() => activeSection !== projectIndex && transitionToSection(projectIndex)}
-      >
-        <div className="section-number">({String(projectIndex - 2).padStart(2, '0')})</div>
-        <h1 className="section-title" data-text={project.title}>{project.title}</h1>
-      </div>
-      <div
-        className="section-content-wrapper"
-        ref={(el) => { if (el) contentRefs.current[projectIndex] = el; }}
-      >
-        <div className="section-content">
-          <div className="project-layout">
-            <div 
-              style={{
-                width: '80%',
-                height: '40vh',
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'center',
-                margin: '0 auto',
-                marginBottom: '2rem',
-                overflow: 'hidden'
-              }}
-            >
-              <img 
-                src={project.image}
-                alt={project.title}
-                style={{
-                  width: '100%',
-                  height: '100%',
-                  objectFit: 'contain',
-                  maxHeight: '100%'
-                }}
-              />
-            </div>
-            <div className="project-details">
-              <p>{project.description}</p>
-              <div className="tech-container">
-                <h3>Technologies Used</h3>
-                <div className="tech-icons">
-                  {project.technologies.map((tech, techIndex) => (
-                    <tech.icon key={techIndex} className="tech-icon" title={tech.name} />
-                  ))}
+              const projectIndex = 3 + index;
+              return (
+                <div
+                  key={projectIndex}
+                  ref={(el) => { if (el) sectionRefs.current[projectIndex] = el; }}
+                  className={`work-section ${activeSection === projectIndex ? "active" : "inactive"}`}
+                  id={`project-${index}`}
+                >
+                  <div className="star">★</div>
+                  <div
+                    className="section-header"
+                    ref={(el) => { if (el) headerRefs.current[projectIndex] = el; }}
+                    onClick={() => activeSection !== projectIndex && transitionToSection(projectIndex)}
+                  >
+                    <div className="section-number">({String(projectIndex - 2).padStart(2, '0')})</div>
+                    <h1 className="section-title" data-text={project.title}>{project.title}</h1>
+                  </div>
+                  <div
+                    className="section-content-wrapper"
+                    ref={(el) => { if (el) contentRefs.current[projectIndex] = el; }}
+                  >
+                    <div className="section-content">
+                      <div className="project-layout">
+                        <div 
+                          style={{
+                            width: '80%',
+                            height: '40vh',
+                            display: 'flex',
+                            justifyContent: 'center',
+                            alignItems: 'center',
+                            margin: '0 auto',
+                            marginBottom: '2rem',
+                            overflow: 'hidden'
+                          }}
+                        >
+                          <img 
+                            src={project.image}
+                            alt={project.title}
+                            style={{
+                              width: '100%',
+                              height: '100%',
+                              objectFit: 'contain',
+                              maxHeight: '100%'
+                            }}
+                          />
+                        </div>
+                        <div className="project-details">
+                          <p>{project.description}</p>
+                          <div className="tech-container">
+                            <h3>Technologies Used</h3>
+                            <div className="tech-icons">
+                              {project.technologies.map((tech, techIndex) => (
+                                <tech.icon key={techIndex} className="tech-icon" title={tech.name} />
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div
+                      className="scroll-indicator flex items-center gap-2 text-gray-400 hover:text-white transition-colors cursor-pointer"
+                      onClick={() => projectIndex < 5 ? transitionToSection(projectIndex + 1) : transitionToSection(0)}
+                    >
+                      <span>{projectIndex < 5 ? "Next Project" : "Back to Start"}</span>
+                      <span>→</span>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </div>
+              );
+            })}
           </div>
-        </div>
-        <div
-          className="scroll-indicator flex items-center gap-2 text-gray-400 hover:text-white transition-colors cursor-pointer"
-          onClick={() => {
-            console.log(`Clicked scroll indicator for project ${projectIndex}`);
-            if (projectIndex === 3 + projects.length - 1) {
-              console.log("Last project clicked, calling transitionToEndSection");
-              transitionToEndSection();
-            } else {
-              transitionToSection(projectIndex + 1);
-            }
-          }}
-        >
-          <span>{projectIndex === 3 + projects.length - 1 ? "View Contact" : "Next Project"}</span>
-          <span>→</span>
         </div>
       </div>
     </div>
   );
-})}
-          </div>
-        </div>
-      </div>
-      
-      {/* Added the missing end section div */}
-
-      <div ref={footerRef} className="portfolio-footer">
-      <div className="footer-container">
-        <div className="footer-top-divider"></div>
-        
-        <div className="footer-header">
-          <h2 className="footer-tagline">Stay Connected</h2>
-          <p className="footer-subtitle">Feel free to reach out for collaborations or just a friendly hello</p>
-        </div>
-        
-        <div className="footer-content">
-          {/* Contact Form Section */}
-          <div className="contact-form-section">
-            {/* Using inline styles to ensure visibility */}
-            <div className="contact-card form-visible" style={{opacity: 1, transform: 'translateY(0)'}}>
-              <div className="card-glow"></div>
-              <h3 className="contact-form-heading">Write a Message</h3>
-              <div className="heading-underline"></div>
-              
-              {submitted ? (
-                <div className="form-success-message">
-                  <div className="success-icon">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-                      <polyline points="22 4 12 14.01 9 11.01"></polyline>
-                    </svg>
-                  </div>
-                  <p>Message sent successfully!</p>
-                </div>
-              ) : (
-                <form ref={formRef} className="contact-form" onSubmit={handleSubmit} style={{color: 'white'}}>
-                  <div className="form-row">
-                    <div className="form-group">
-                      <label htmlFor="name" className="form-label">Name</label>
-                      <input
-                        type="text"
-                        id="name"
-                        name="name"
-                        value={formData.name}
-                        onChange={handleInputChange}
-                        className="form-input"
-                        placeholder="Your name"
-                        required
-                      />
-                    </div>
-                    
-                    <div className="form-group">
-                      <label htmlFor="email" className="form-label">Email</label>
-                      <input
-                        type="email"
-                        id="email"
-                        name="email"
-                        value={formData.email}
-                        onChange={handleInputChange}
-                        className="form-input"
-                        placeholder="your.email@example.com"
-                        required
-                      />
-                    </div>
-                  </div>
-                  
-                  <div className="form-group">
-                    <label htmlFor="message" className="form-label">Message</label>
-                    <textarea
-                      id="message"
-                      name="message"
-                      value={formData.message}
-                      onChange={handleInputChange}
-                      className="form-textarea"
-                      placeholder="Hello! I'd like to discuss..."
-                      rows={3}
-                      required
-                    ></textarea>
-                  </div>
-                  
-                  <button type="submit" className="submit-button" disabled={isSubmitting}>
-                    {isSubmitting ? (
-                      <span className="spinner">
-                        <span className="spinner-inner"></span>
-                      </span>
-                    ) : 'Send Message'}
-                  </button>
-                </form>
-              )}
-            </div>
-            
-            <div className="form-decoration left-decoration">
-              <div className="decoration-circle"></div>
-              <div className="decoration-line"></div>
-              <div className="decoration-square"></div>
-            </div>
-            
-            <div className="form-decoration right-decoration">
-              <div className="decoration-square"></div>
-              <div className="decoration-line"></div>
-              <div className="decoration-circle"></div>
-            </div>
-          </div>
-          
-          <div className="footer-grid">
-            <div className="footer-links">
-              <div className="footer-section">
-                <h3 className="footer-heading">Menu</h3>
-                <ul className="footer-list">
-                  <li><a href="#home" className="footer-link">Home</a></li>
-                  <li><a href="#services" className="footer-link">Services</a></li>
-                  <li><a href="#projects" className="footer-link">Projects</a></li>
-                </ul>
-              </div>
-              
-              <div className="footer-section">
-                <h3 className="footer-heading">Socials</h3>
-                <ul className="footer-list">
-                  <li><a href="https://x.com/shridhar0405" target="_blank" rel="noopener noreferrer" className="footer-link">X</a></li>
-                  <li><a href="https://github.com/shree42003" target="_blank" rel="noopener noreferrer" className="footer-link">GitHub</a></li>
-                  <li><a href="www.linkedin.com/in/shridhar-iyer-94a526272" target="_blank" rel="noopener noreferrer" className="footer-link">LinkedIn</a></li>
-                </ul>
-              </div>
-              
-              <div className="footer-section">
-                <h3 className="footer-heading">Resources</h3>
-                <ul className="footer-list">
-                  <li><a href="https://ijsrem.com/download/from-traditional-to-digital-evaluating-the-role-of-spirituality-in-mental-health-and-therapy/" target="_blank" rel="noopener noreferrer" className="footer-link">Paper Published</a></li>
-                </ul>
-              </div>
-            </div>
-            
-            <div className="time-card">
-              <div className="time-card-inner">
-                <div className="time-entry">
-                  <p className="time-label">Shridhar's Local Time</p>
-                  <p className="time-value">{shridharTime}</p>
-                </div>
-                <div className="time-divider"></div>
-                <div className="time-entry">
-                  <p className="time-label">Your Local Time</p>
-                  <p className="time-value">{localTime}</p>
-                </div>
-              </div>
-            </div>
-          </div>
-          
-          <div className="footer-bottom">
-            <div className="copyright">
-              <span>© {new Date().getFullYear()} Shridhar</span>
-              <span>All rights reserved.</span>
-            </div>
-          </div>
-        </div>
-      </div>
-      
-      <div className="footer-background">
-        <div className="particle particle-1"></div>
-        <div className="particle particle-2"></div>
-        <div className="particle particle-3"></div>
-        <div className="particle particle-4"></div>
-        <div className="particle particle-5"></div>
-        <div className="particle particle-6"></div>
-        <div className="bg-shape shape-1"></div>
-        <div className="bg-shape shape-2"></div>
-        <div className="bg-shape shape-3"></div>
-      </div>
-      
-      <a href="#top" className="back-to-top">
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 16 16">
-          <path fillRule="evenodd" d="M8 12a.5.5 0 0 0 .5-.5V5.707l2.146 2.147a.5.5 0 0 0 .708-.708l-3-3a.5.5 0 0 0-.708 0l-3 3a.5.5 0 1 0 .708.708L7.5 5.707V11.5a.5.5 0 0 0 .5.5z"/>
-        </svg>
-      </a>
-    </div>
-    </div>
-  );
-};
-
-
-export default MainPortfolio;
+}
+export default MainPortfolio

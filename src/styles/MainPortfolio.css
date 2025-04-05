@@ -1743,3 +1743,25 @@ html, body {
   -webkit-transform: translateZ(0);
   /* ... existing styles ... */
 }
+
+.back-to-projects-btn {
+  background: linear-gradient(135deg, #f8b500, #ff8c00);
+  border: none;
+  border-radius: 8px;
+  padding: 12px 24px;
+  color: white;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  position: relative;
+  z-index: 100;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.back-to-projects-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+}

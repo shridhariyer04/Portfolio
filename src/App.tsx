@@ -5,6 +5,7 @@ import MainPortfolio from './components/MainPortfolio';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { ScrollToPlugin } from 'gsap/ScrollToPlugin';
+import ContactForm from './components/ContactForm';
 
 gsap.registerPlugin(ScrollTrigger, ScrollToPlugin);
 
@@ -28,6 +29,7 @@ function AppContent() {
     <Routes>
       <Route path="/" element={<LoadingPage />} />
       <Route path="/portfolio" element={<MainPortfolio />} />
+      <Route path="/contact" element={<ContactForm />} />
     </Routes>
   );
 }
