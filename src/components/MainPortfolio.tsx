@@ -4,9 +4,9 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import "../styles/MainPortfolio.css";
 import Photo from '../assets/Photo.jpeg';
 import { motion } from "framer-motion";
-import GitaGPT from "../assets/GitaGPT.png"
-import Vetra from '../assets/Vetra .png'
-import womenapp from '../assets/womenapp.jpeg'
+import GitaGPT from "../assets/GitaGPT.png";
+import Vetra from '../assets/Vetra .png';
+import womenapp from '../assets/womenapp.jpeg';
 import { Link } from "react-router-dom";
 import {
   SiJavascript,
@@ -90,31 +90,19 @@ const TechStack = () => {
 gsap.registerPlugin(ScrollTrigger);
 
 const MainPortfolio = () => {
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    message: "",
-  });
-
   const bioSectionRef = useRef<ExtendedHTMLDivElement>(null);
   const workContainerRef = useRef<ExtendedHTMLDivElement>(null);
-  const footerRef = useRef<ExtendedHTMLDivElement>(null);
   const sectionRefs = useRef<HTMLDivElement[]>([]);
   const [activeSection, setActiveSection] = useState<number>(0);
   const [inWorkView, setInWorkView] = useState<boolean>(false);
   const headerRefs = useRef<(HTMLDivElement | null)[]>([]);
   const contentRefs = useRef<(HTMLDivElement | null)[]>([]);
   const mainContainerRef = useRef<HTMLDivElement>(null);
-  const [localTime, setLocalTime] = useState('');
-  const [shridharTime, setShridharTime] = useState('');
-  const formRef = useRef(null);
 
   const projects = [
     {
       title: "Vetra",
-      description:"A platform designed to inspire developers and help them quickly turn ideas into reality—like Pinterest, but for devs. Browse, save, and execute ideas effortlessly to enhance your projects. Simplifying innovation, one idea at a time",
+      description: "A platform designed to inspire developers and help them quickly turn ideas into reality—like Pinterest, but for devs. Browse, save, and execute ideas effortlessly to enhance your projects. Simplifying innovation, one idea at a time",
       image: Vetra,
       technologies: [
         { name: "React", icon: SiReact },
@@ -137,14 +125,14 @@ const MainPortfolio = () => {
     },
     {
       title: "Women Safety App",
-      description: "An app built for women's safety while traveling. It detects threats, shares live location with emergency contacts, and records surrounding audio for added security. Designed to provide quick assistance in critical situations..",
-      image:womenapp ,
+      description: "An app built for women's safety while traveling. It detects threats, shares live location with emergency contacts, and records surrounding audio for added security. Designed to provide quick assistance in critical situations.",
+      image: womenapp,
       technologies: [
         { name: "Supabase", icon: SiSupabase },
-        { name: "Css", icon: SiCss3},
+        { name: "Css", icon: SiCss3 },
         { name: "Typescript", icon: SiTypescript },
         { name: "React", icon: SiReact },
-        { name:"Expo", icon:SiExpo}
+        { name: "Expo", icon: SiExpo }
       ]
     },
   ];
@@ -339,13 +327,11 @@ const MainPortfolio = () => {
       requestAnimationFrame(() => {
         if (e.deltaY > 0 && activeSection < sectionRefs.current.length - 1) {
           transitionToSection(activeSection + 1);
-        } else if (e.deltaY < 0 && activeSection > 0 && activeSection < 6) {
+        } else if (e.deltaY < 0 && activeSection > 0) {
           transitionToSection(activeSection - 1);
-        } else if (e.deltaY > 0 && activeSection === sectionRefs.current.length - 1) {
-          transitionToEndSection();
         } else if (e.deltaY < 0 && activeSection === 0) {
           transitionToBioSection();
-        } 
+        }
         isTransitioning = false;
       });
     };
@@ -361,18 +347,15 @@ const MainPortfolio = () => {
   
     const handleTouchMove = (e: TouchEvent) => {
       if (!touchStartY || isTransitioning) return;
-  
       const touchEndY = e.touches[0].clientY;
       const touchEndX = e.touches[0].clientX;
       const diffY = touchStartY - touchEndY;
       const diffX = Math.abs(touchStartX - touchEndX);
-  
       if (Math.abs(diffY) > touchThreshold && Math.abs(diffY) > diffX * 1.5) {
         e.preventDefault();
         isTransitioning = true;
         touchStartY = 0;
         touchStartX = 0;
-  
         requestAnimationFrame(() => {
           if (diffY > 0 && activeSection < sectionRefs.current.length - 1) {
             console.log("Touch: Scrolling down to section", activeSection + 1);
@@ -380,27 +363,18 @@ const MainPortfolio = () => {
           } else if (diffY < 0 && activeSection > 0) {
             console.log("Touch: Scrolling up to section", activeSection - 1);
             transitionToSection(activeSection - 1);
-          } else if (diffY > 0 && activeSection === sectionRefs.current.length - 1) {
-            console.log("Touch: Transitioning to end section");
-            transitionToEndSection();
           } else if (diffY < 0 && activeSection === 0) {
             console.log("Touch: Transitioning back to bio section");
             transitionToBioSection();
-          } else if (diffY < 0 && activeSection === 6) { // Assuming footer is index 6
-            console.log("Touch: Scrolling up from footer to third project");
-            transitionToSection(5); // Go back to Women Safety App
           }
         });
-  
         setTimeout(() => { isTransitioning = false; }, TRANSITION_COOLDOWN);
       }
     };
   
     const handleKeyDown = (e: KeyboardEvent) => {
       if (isTransitioning) return;
-  
       isTransitioning = true;
-      
       requestAnimationFrame(() => {
         if ((e.key === 'ArrowDown' || e.key === 'PageDown') && activeSection < sectionRefs.current.length - 1) {
           console.log("Key: Scrolling down to section", activeSection + 1);
@@ -408,18 +382,14 @@ const MainPortfolio = () => {
         } else if ((e.key === 'ArrowUp' || e.key === 'PageUp') && activeSection > 0) {
           console.log("Key: Scrolling up to section", activeSection - 1);
           transitionToSection(activeSection - 1);
-        } else if ((e.key === 'ArrowDown' || e.key === 'PageDown') && activeSection === sectionRefs.current.length - 1) {
-          console.log("Key: Transitioning to end section");
-          transitionToEndSection();
         } else if ((e.key === 'ArrowUp' || e.key === 'PageUp') && activeSection === 0) {
           console.log("Key: Transitioning back to bio section");
-          // Go back to Women Safety App
+          transitionToBioSection();
         } else {
           isTransitioning = false;
           return;
         }
       });
-  
       setTimeout(() => { isTransitioning = false; }, TRANSITION_COOLDOWN);
     };
   
@@ -438,14 +408,12 @@ const MainPortfolio = () => {
         workContainerRef.current.removeEventListener("touchstart", handleTouchStart);
         workContainerRef.current.removeEventListener("touchmove", handleTouchMove);
       }
-  
       if (!inWorkView) {
         gsap.set(workContainerRef.current, { position: "absolute", y: "100%" });
         gsap.set(bioSectionRef.current, { opacity: 1 });
       }
     };
   }, [inWorkView, activeSection]);
-  
   
   const transitionToSection = (index: number) => {
     console.log(`Transitioning from section ${activeSection} to section ${index}`);
@@ -491,110 +459,29 @@ const MainPortfolio = () => {
     const tl = gsap.timeline({
       onStart: () => {
         console.log("Starting transition animation");
-        // Disable wheel events during transition
         document.body.style.overflow = "hidden";
       },
       onComplete: () => {
         console.log("Transition complete, setting activeSection =", index);
         setActiveSection(index);
-        // Hide sections that are not adjacent to the current one
         sectionRefs.current.forEach((section, i) => {
           if (i !== index && i !== index - 1 && i !== index + 1) {
             gsap.set(section, { display: "none" });
           }
         });
-        // Re-enable wheel events
         document.body.style.overflow = "";
       },
     });
 
-    // Animate out current section
     tl.to(currentContent, { opacity: 0, height: 0, duration: 0.35, ease: "power2.inOut" });
     tl.to(currentHeader, { y: isMovingDown ? -60 : 60, opacity: 0.7, duration: 0.35, ease: "power2.inOut" }, "-=0.2");
     tl.to(currentSection, { y: isMovingDown ? "-100%" : "100%", duration: 0.5, ease: "power2.inOut" }, "-=0.1");
-    
-    // Animate in target section
     tl.to(targetSection, { y: "0%", duration: 0.5, ease: "power2.inOut" }, "-=0.5");
     tl.to(targetHeader, { y: 0, opacity: 1, duration: 0.35, ease: "power2.inOut" }, "-=0.2");
     tl.to(targetContent, { opacity: 1, duration: 0.35, ease: "power2.inOut" }, "-=0.2");
     tl.fromTo(targetSection, { scale: 0.98 }, { scale: 1, duration: 0.3, ease: "power2.out" }, "-=0.3");
   };
 
-  const setupProjectFooterScroll = () => {
-    if (!workContainerRef.current || !footerRef.current || !sectionRefs.current[5]) {
-      console.error("Missing refs for project-footer scroll");
-      return;
-    }
-  
-    // Create a container that will hold both the project section and footer
-    const projectFooterContainer = document.createElement('div');
-    projectFooterContainer.className = 'project-footer-container';
-    document.body.appendChild(projectFooterContainer);
-  
-    // Set styles for the container
-    gsap.set(projectFooterContainer, {
-      position: 'fixed',
-      top: 0,
-      left: 0,
-      width: '100%',
-      height: '100vh',
-      overflow: 'auto',
-      zIndex: 10,
-      visibility: 'visible'
-    });
-  
-    // Helper function to handle the scroll between projects and footer
-    const handleProjectFooterScroll = () => {
-      if (!inWorkView || activeSection !== 5) return;
-      
-      const scrollPosition = projectFooterContainer.scrollTop;
-      const projectHeight = sectionRefs.current[5].offsetHeight;
-      const scrollProgress = scrollPosition / (projectHeight - window.innerHeight);
-      
-      console.log(`Scroll progress: ${scrollProgress.toFixed(2)}`);
-      
-      // Smoothly transition to footer when scrolling past projects
-      if (scrollProgress > 0.8) {
-        gsap.to(footerRef.current, {
-          y: '0',
-          opacity: 1,
-          duration: 0.5,
-          display: 'block',
-          ease: 'power2.out'
-        });
-      } else {
-        gsap.to(footerRef.current, {
-          y: '30vh',
-          opacity: 0,
-          duration: 0.5,
-          ease: 'power2.out'
-        });
-      }
-      
-      // If we're fully at the footer, update state to reflect this
-      if (scrollProgress >= 1) {
-        // We're at the footer, but still technically in the project view
-        // Just update UI accordingly without completely changing the state
-        console.log("Fully scrolled to footer");
-      }
-    };
-  
-    // Add the project section and footer to the container
-    projectFooterContainer.appendChild(sectionRefs.current[5].cloneNode(true));
-    projectFooterContainer.appendChild(footerRef.current.cloneNode(true));
-    
-    // Add scroll event listener
-    projectFooterContainer.addEventListener('scroll', handleProjectFooterScroll);
-    
-    return () => {
-      projectFooterContainer.removeEventListener('scroll', handleProjectFooterScroll);
-      document.body.removeChild(projectFooterContainer);
-    };
-  };
-
-    // Modify the transitionBackToWorkSection function to properly handle returning from footer
-    
-  
   const transitionToBioSection = () => {
     console.log("transitionToBioSection: Starting transition back to bio");
     if (!workContainerRef.current || !bioSectionRef.current) {
@@ -629,135 +516,7 @@ const MainPortfolio = () => {
     tl.to(workContainerRef.current, { y: "100%", duration: 0.6, ease: "power2.inOut" })
       .to(bioSectionRef.current, { opacity: 1, filter: "blur(0px)", duration: 0.4 }, "-=0.3");
   };
-  
-  const transitionToEndSection = () => {
-    console.log("Starting transition to footer section");
-    
-    if (!workContainerRef.current || !footerRef.current || !bioSectionRef.current) {
-      console.log('Missing refs:', { 
-        workContainerRef: !!workContainerRef.current, 
-        footerRef: !!footerRef.current,
-        bioSectionRef: !!bioSectionRef.current
-      });
-      return;
-    }
-  
-    const tl = gsap.timeline({
-      onStart: () => {
-        console.log('Footer transition started');
-        if (footerRef.current) {
-          footerRef.current.classList.add('active');
-          gsap.set(footerRef.current, { 
-            display: 'block',
-            opacity: 0,
-            y: '50vh'
-          });
-        }
-      },
-      onComplete: () => {
-        console.log("Footer transition complete");
-        setInWorkView(false);
-        setActiveSection(6); // Set to 6 for footer
-        document.body.style.overflow = 'hidden'; // Keep scroll locked
-        setTimeout(() => {
-          if (footerRef.current) {
-            footerRef.current.scrollIntoView({ behavior: 'smooth' });
-          }
-        }, 100);
-      },
-    });
-  
-    tl.to(workContainerRef.current, { 
-      y: "-100%", 
-      opacity: 0, 
-      duration: 0.7, 
-      ease: "power2.inOut" 
-    })
-    .to(bioSectionRef.current, { 
-      opacity: 0, 
-      duration: 0.4 
-    }, "-=0.5")
-    .to(footerRef.current, {
-      opacity: 1,
-      y: "0",
-      duration: 0.7,
-      ease: "power2.inOut"
-    }, "-=0.3");
-  };
-  
-  useEffect(() => {
-    const footer = footerRef.current;
-    if (!footer) return;
-    
-    // Show the footer (it's initially hidden with display: none)
-    footer.style.display = 'block';
-    
-    const animateOnScroll = () => {
-      // Get footer position relative to viewport
-      const footerRect = footer.getBoundingClientRect();
-      const isInView = footerRect.top < window.innerHeight;
-      console.log("Footer in view:", isInView); // Debug log
-      
-      if (isInView) {
-        // Add animation classes
-        const footerHeading = footer.querySelector('.footer-heading');
-        const footerLinks = footer.querySelector('.footer-links');
-        const footerContact = footer.querySelector('.footer-contact');
-        const footerDivider = footer.querySelector('.footer-divider');
-        const footerBottom = footer.querySelector('.footer-bottom');
-        
-        if (footerHeading) footerHeading.classList.add('animated');
-        if (footerLinks) footerLinks.classList.add('animated');
-        if (footerContact) footerContact.classList.add('animated');
-        if (footerDivider) footerDivider.classList.add('animated');
-        if (footerBottom) footerBottom.classList.add('animated');
-        
-        // Remove scroll listener once animation is triggered
-        window.removeEventListener('scroll', animateOnScroll);
-      }
-    };
-    
-    // Add scroll listener
-    window.addEventListener('scroll', animateOnScroll);
-    
-    // Check if footer is already in view when page loads
-    animateOnScroll();
-    
-    // Clean up
-    return () => {
-      window.removeEventListener('scroll', animateOnScroll);
-    };
-  }, [footerRef]);
-  
-  const navigateToFooter = () => {
-    console.log("Navigating directly to footer");
-    
-    if (!footerRef.current) {
-      console.log("Footer ref missing, cannot navigate");
-      return;
-    }
-    
-    // Make sure the footer is visible
-    if (footerRef.current) {
-      footerRef.current.classList.add('active');
-      footerRef.current.style.display = 'block';
-      footerRef.current.style.opacity = '1';
-      footerRef.current.style.transform = 'translateY(0)';
-      
-      // Scroll to the footer
-      setTimeout(() => {
-        footerRef.current?.scrollIntoView({ behavior: 'smooth' });
-      }, 100);
-    }
-    
-    // Reset work view state if needed
-    if (inWorkView) {
-      setInWorkView(false);
-      setActiveSection(0);
-    }
-  };
-  
-  // Add nav click handlers to open work section
+
   useEffect(() => {
     const workNavLink = document.querySelector('nav a[href="#work"]');
     if (workNavLink) {
@@ -768,166 +527,14 @@ const MainPortfolio = () => {
         gsap.to(bioSectionRef.current, { opacity: 0.85, filter: "blur(0.5px)", duration: 0.4 });
       });
     }
-    
-    // Add handlers for back/forward navigation buttons if you have them
-    const backButton = document.querySelector('.back-button'); // Adjust selector as needed
-    const forwardButton = document.querySelector('.forward-button'); // Adjust selector as needed
-    
-    if (backButton) {
-      backButton.addEventListener('click', () => {
-        if (activeSection > 0) {
-          transitionToSection(activeSection - 1);
-        } else if (activeSection === 0 && inWorkView) {
-          transitionToBioSection();
-        }
-      });
-    }
-    
-    if (forwardButton) {
-      forwardButton.addEventListener('click', () => {
-        if (activeSection < sectionRefs.current.length - 1) {
-          transitionToSection(activeSection + 1);
-        } else if (activeSection === sectionRefs.current.length - 1) {
-          transitionToEndSection();
-        }
-      });
-    }
-    
+  
     return () => {
       if (workNavLink) {
         workNavLink.removeEventListener('click', () => {});
       }
-      if (backButton) {
-        backButton.removeEventListener('click', () => {});
-      }
-      if (forwardButton) {
-        forwardButton.removeEventListener('click', () => {});
-      }
-    };
-  }, [activeSection, inWorkView]);
-  
-  // Add this useEffect to handle navigation links
-  useEffect(() => {
-    // Handle work nav link
-    const workNavLink = document.querySelector('nav a[href="#work"]');
-    if (workNavLink) {
-      workNavLink.addEventListener('click', (e) => {
-        e.preventDefault();
-        setInWorkView(true);
-        gsap.to(workContainerRef.current, { y: "0%", duration: 0.5, ease: "power1.inOut" });
-        gsap.to(bioSectionRef.current, { opacity: 0.85, filter: "blur(0.5px)", duration: 0.4 });
-      });
-    }
-    
-    // Handle contact nav link
-    const contactNavLink = document.querySelector('a.contact[href="#contact"]');
-    if (contactNavLink) {
-      contactNavLink.addEventListener('click', (e) => {
-        e.preventDefault();
-        navigateToFooter();
-      });
-    }
-    
-    return () => {
-      if (workNavLink) {
-        workNavLink.removeEventListener('click', () => {});
-      }
-      if (contactNavLink) {
-        contactNavLink.removeEventListener('click', () => {});
-      }
     };
   }, []);
-  
-  useEffect(() => {
-    // Update times every second
-    const updateTimes = () => {
-      const now = new Date();
-      
-      // Local time
-      setLocalTime(now.toLocaleTimeString());
-      
-      // Assuming Shridhar is in IST (UTC+5:30)
-      const shridharDate = new Date(now.getTime() + (5.5 * 60 * 60 * 1000 - now.getTimezoneOffset() * 60 * 1000));
-      setShridharTime(shridharDate.toLocaleTimeString());
-    };
-    
-    updateTimes();
-    const interval = setInterval(updateTimes, 1000);
-    
-    // Intersection Observer for animation
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          entry.target.classList.add('footer-entered');
-          
-          // Make the form visible immediately instead of using setTimeout
-          const form = document.querySelector('.contact-card');
-          const links = document.querySelector('.footer-links');
-          const bottom = document.querySelector('.footer-bottom');
-          
-          if (form) {
-            form.classList.add('form-visible');
-            console.log('Added form-visible class to contact card'); // Debug line
-          }
-          if (links) links.classList.add('animated');
-          if (bottom) bottom.classList.add('animated');
-        }
-      },
-      { threshold: 0.1 }
-    );
-    
-    if (footerRef.current) {
-      observer.observe(footerRef.current);
-    }
-    
-    return () => {
-      clearInterval(interval);
-      if (footerRef.current) {
-        observer.unobserve(footerRef.current);
-      }
-    };
-  }, []);
-  
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    setFormData({
-      ...formData,
-      [name]: value
-    });
-  };
-  
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-    
-    // Create Gmail compose URL with form data in conversational format
-    const subject = encodeURIComponent(`Portfolio Contact - ${formData.name}`);
-    const body = encodeURIComponent(
-      `Hey, I'm ${formData.name}!\n\n` +
-      `${formData.message}\n\n` +
-      `Looking forward to connecting with you!\n\n` +
-      `You can reach me at: ${formData.email}`
-    );
-    
-    // Open Gmail compose window
-    window.open(
-      `https://mail.google.com/mail/?view=cm&fs=1&to=shreeiyer04@gmail.com&su=${subject}&body=${body}`,
-      '_blank'
-    );
-    
-    // Show success message and reset form
-    setTimeout(() => {
-      setIsSubmitting(false);
-      setSubmitted(true);
-      setFormData({ name: '', email: '', message: '' });
-      
-      // Reset submit message after 5 seconds
-      setTimeout(() => {
-        setSubmitted(false);
-      }, 5000);
-    }, 1000);
-  };
-  
+
   return (
     <div className="main-container" ref={mainContainerRef}>
       <div ref={bioSectionRef} className="portfolio-container">
@@ -935,7 +542,7 @@ const MainPortfolio = () => {
           <nav>
             <a href="#bio">BIO</a>
             <a href="#work">WORK</a>
-            <Link to="/contact">CONTACT</Link> {/* Updated to link to separate contact page */}
+            <Link to="/contact">CONTACT</Link>
           </nav>
         </header>
         <div className="content-wrapper">
@@ -1042,7 +649,8 @@ const MainPortfolio = () => {
                 ref={(el) => { if (el) contentRefs.current[1] = el; }}
               >
                 <div className="section-content">
-                  <p className="text-lg leading-relaxed mb-6">Currently exploring mobile development with React Native. Built a women's safety app and learning to create smooth, high-performance mobile experiences. Focused on writing clean code and improving app efficiency  
+                  <p className="text-lg leading-relaxed mb-6">
+                    Currently exploring mobile development with React Native. Built a women's safety app and learning to create smooth, high-performance mobile experiences. Focused on writing clean code and improving app efficiency  
                   </p>
                   <div className="subsections grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="subsection flex items-center p-4 bg-gray-900/50 rounded-lg hover:bg-gray-900/70 transition-all" style={{'--index': 1} as React.CSSProperties}>
@@ -1187,5 +795,6 @@ const MainPortfolio = () => {
       </div>
     </div>
   );
-}
-export default MainPortfolio
+};
+
+export default MainPortfolio;
